@@ -1,0 +1,112 @@
+package io.scalebi.console.controller;
+
+import io.scalebi.console.entity.Ticket;
+import io.scalebi.console.repository.TicketRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Controller
+public class TicketController {
+
+  @Autowired
+  private TicketRepository ticketRepository;
+
+  @GetMapping("/tickets")
+  public String getAll(Model model, @Param("keyword") String keyword) {
+    try {
+      List<Ticket> tickets = new ArrayList<>();
+
+      if (keyword == null) {
+        ticketRepository.findAll().forEach(tickets::add);
+      } else {
+        ticketRepository.findByTitleContainingIgnoreCase(keyword).forEach(tickets::add);
+        model.addAttribute("keyword", keyword);
+      }
+
+      model.addAttribute("tickets", tickets);
+    } catch (Exception e) {
+      model.addAttribute("message", e.getMessage());
+    }
+
+    return "tickets";
+  }
+
+  @GetMapping("/tickets/new")
+  public String addTicket(Model model) {
+    Ticket ticket = new Ticket();
+    ticket.setPublished(true);
+
+    model.addAttribute("ticket", ticket);
+    model.addAttribute("pageTitle", "Create new Ticket");
+
+    return "ticket_form";
+  }
+
+  @PostMapping("/tickets/save")
+  public String saveTicket(Ticket ticket, RedirectAttributes redirectAttributes) {
+    try {
+      ticketRepository.save(ticket);
+
+      redirectAttributes.addFlashAttribute("message", "The Ticket has been saved successfully!");
+    } catch (Exception e) {
+      redirectAttributes.addAttribute("message", e.getMessage());
+    }
+
+    return "redirect:/tickets";
+  }
+
+  @GetMapping("/tickets/{id}")
+  public String editTicket(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+    try {
+      Ticket ticket = ticketRepository.findById(id).get();
+
+      model.addAttribute("ticket", ticket);
+      model.addAttribute("pageTitle", "Edit Ticket (ID: " + id + ")");
+
+      return "ticket_form";
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("message", e.getMessage());
+
+      return "redirect:/tickets";
+    }
+  }
+
+  @GetMapping("/tickets/delete/{id}")
+  public String deleteTicket(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
+    try {
+      ticketRepository.deleteById(id);
+
+      redirectAttributes.addFlashAttribute("message", "The Ticket with id=" + id + " has been deleted successfully!");
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("message", e.getMessage());
+    }
+
+    return "redirect:/tickets";
+  }
+
+  @GetMapping("/tickets/{id}/published/{status}")
+  public String updateTicketPublishedStatus(@PathVariable("id") Integer id, @PathVariable("status") boolean published,
+      Model model, RedirectAttributes redirectAttributes) {
+    try {
+      ticketRepository.updatePublishedStatus(id, published);
+
+      String status = published ? "published" : "disabled";
+      String message = "The Ticket id=" + id + " has been " + status;
+
+      redirectAttributes.addFlashAttribute("message", message);
+    } catch (Exception e) {
+      redirectAttributes.addFlashAttribute("message", e.getMessage());
+    }
+
+    return "redirect:/tickets";
+  }
+}

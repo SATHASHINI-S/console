@@ -1,1 +1,1 @@
-# console
+# Scale BI Console
