@@ -12,7 +12,8 @@
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js">
+  <!-- Bootstrap 5 bundle (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -24,24 +25,21 @@
     <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message"
       role="alert">
       [[${message}]]
-      <button type="button" class="close btn-sm" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+      <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <div class="my-3">
-      <form th:action="@{/tickets}">
-        <div class="row d-flex">
-          <div class="col-md-6 mt-2">
-            <div class="search">
-              <i class="fa fa-search"></i>
-              <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"
+      <form th:action="@{/tickets}" id="searchForm">
+        <input type="hidden" name="page" value="1" />
+        <div class="row">
+          <div class="col-12">
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa fa-search"></i></span>
+              <input id="keyword" type="search" name="keyword" th:value="${keyword}" class="form-control"
                 placeholder="Enter keyword">
               <button type="submit" class="btn btn-secondary">Search</button>
+              <a th:href="@{/tickets}" class="btn btn-info">Clear</a>
             </div>
-          </div>
-          <div class="col-md-6 mt-2">
-            <a th:href="@{/tickets}" class="btn btn-info">Clear</a>
           </div>
         </div>
       </form>
@@ -81,6 +79,43 @@
           </tr>
         </tbody>
       </table>
+
+      <div class="row align-items-center mt-3 g-2">
+        <div class="col-md-4">
+          <form th:action="@{/tickets}" method="get" class="d-inline-flex align-items-center">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="keyword" th:value="${keyword}" />
+            <label for="sizeBottom" class="form-label me-2 mb-0">Per page</label>
+            <select id="sizeBottom" name="size" class="form-select w-auto" onchange="this.form.submit()">
+              <option th:selected="${pageSize == 10}" value="10">10</option>
+              <option th:selected="${pageSize == 25}" value="25">25</option>
+              <option th:selected="${pageSize == 50}" value="50">50</option>
+              <option th:selected="${pageSize == 100}" value="100">100</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="col-md-4 text-center">
+          <span th:text="${totalItems}"></span> items • Page <span th:text="${currentPage}"></span> of <span th:text="${totalPages}"></span>
+        </div>
+
+        <div class="col-md-4 text-end">
+          <nav th:if="${totalPages > 1}" aria-label="Ticket pagination">
+            <ul class="pagination justify-content-center mb-0">
+              <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
+                <a class="page-link" th:href="@{|/tickets?page=${currentPage - 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}" tabindex="-1">Previous</a>
+              </li>
+              <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}" th:classappend="${i == currentPage} ? ' active'">
+                <a class="page-link" th:href="@{|/tickets?page=${i}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}" th:text="${i}">1</a>
+              </li>
+              <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
+                <a class="page-link" th:href="@{|/tickets?page=${currentPage + 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Next</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+      </div>
     </div>
 
     <div class="" th:unless="${tickets.size() > 0}">
@@ -88,14 +123,12 @@
     </div>
   </div>
 
-  <div class="modal fade text-center" id="confirmModal">
+  <div class="modal fade text-center" id="confirmModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Delete Confirmation</h5>
-          <button type="button" class="close" data-dismiss="modal">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <div class="modal-body">
@@ -104,7 +137,7 @@
 
         <div class="modal-footer">
           <a type="button" id="yesBtn" class="btn btn-danger">Yes</a>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
         </div>
       </div>
     </div>
@@ -113,17 +146,19 @@
   <div th:replace="fragments/footer :: footer"></div>
 
   <script type="text/javascript">
-    $(document).ready(function () {
-      $(".btn-delete").on("click", function (e) {
-        e.preventDefault();
-        link = $(this);
-
-        ticketTitle = link.attr("ticketTitle");
-        $("#yesBtn").attr("href", link.attr("href"));
-        $("#confirmText").html("Do you want to delete the Ticket \<strong\>" + ticketTitle + "\<\/strong\>?");
-        $("#confirmModal").modal();
+    document.addEventListener('DOMContentLoaded', function () {
+      var deleteButtons = document.querySelectorAll('.btn-delete');
+      deleteButtons.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var link = e.currentTarget;
+          var ticketTitle = link.getAttribute('ticketTitle');
+          document.getElementById('yesBtn').setAttribute('href', link.getAttribute('href'));
+          document.getElementById('confirmText').innerHTML = 'Do you want to delete the Ticket <strong>' + ticketTitle + '</strong>?';
+          var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+          modal.show();
+        });
       });
-
     });
   </script>
 
