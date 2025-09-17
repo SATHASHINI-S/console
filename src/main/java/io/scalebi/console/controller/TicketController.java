@@ -1,8 +1,10 @@
 package io.scalebi.console.controller;
 
-import io.scalebi.console.entity.Ticket;
-import io.scalebi.console.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,8 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.scalebi.console.entity.Ticket;
+import io.scalebi.console.repository.TicketRepository;
 
 @Controller
 public class TicketController {
@@ -21,18 +23,25 @@ public class TicketController {
   private TicketRepository ticketRepository;
 
   @GetMapping("/tickets")
-  public String getAll(Model model, @Param("keyword") String keyword) {
+  public String getAll(Model model, @Param("keyword") String keyword, @Param("page") Integer page, @Param("size") Integer size) {
     try {
-      List<Ticket> tickets = new ArrayList<>();
+      int currentPage = (page == null || page < 1) ? 1 : page;
+      int pageSize = (size == null || size < 1) ? 10 : size;
+      Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "id"));
 
-      if (keyword == null) {
-        ticketRepository.findAll().forEach(tickets::add);
+      Page<Ticket> ticketPage;
+      if (keyword == null || keyword.trim().isEmpty()) {
+        ticketPage = ticketRepository.findAll(pageable);
       } else {
-        ticketRepository.findByTitleContainingIgnoreCase(keyword).forEach(tickets::add);
+        ticketPage = ticketRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
         model.addAttribute("keyword", keyword);
       }
 
-      model.addAttribute("tickets", tickets);
+      model.addAttribute("tickets", ticketPage.getContent());
+      model.addAttribute("currentPage", currentPage);
+      model.addAttribute("totalPages", ticketPage.getTotalPages());
+      model.addAttribute("totalItems", ticketPage.getTotalElements());
+      model.addAttribute("pageSize", pageSize);
     } catch (Exception e) {
       model.addAttribute("message", e.getMessage());
     }
