@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import io.scalebi.console.entity.Ticket;
-import io.scalebi.console.repository.TicketRepository;
+import io.scalebi.console.repository.TicketService;
 
 @Controller
 public class TicketController {
 
   @Autowired
-  private TicketRepository ticketRepository;
+  private TicketService ticketService;
 
   @GetMapping("/tickets")
   public String getAll(Model model, @Param("keyword") String keyword, @Param("page") Integer page, @Param("size") Integer size) {
@@ -31,9 +31,9 @@ public class TicketController {
 
       Page<Ticket> ticketPage;
       if (keyword == null || keyword.trim().isEmpty()) {
-        ticketPage = ticketRepository.findAll(pageable);
+        ticketPage = ticketService.findAll(pageable);
       } else {
-        ticketPage = ticketRepository.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
+        ticketPage = ticketService.findByTitleContainingIgnoreCase(keyword.trim(), pageable);
         model.addAttribute("keyword", keyword);
       }
 
@@ -63,7 +63,7 @@ public class TicketController {
   @PostMapping("/tickets/save")
   public String saveTicket(Ticket ticket, RedirectAttributes redirectAttributes) {
     try {
-      ticketRepository.save(ticket);
+      ticketService.save(ticket);
 
       redirectAttributes.addFlashAttribute("message", "The Ticket has been saved successfully!");
     } catch (Exception e) {
@@ -76,7 +76,7 @@ public class TicketController {
   @GetMapping("/tickets/{id}")
   public String editTicket(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
     try {
-      Ticket ticket = ticketRepository.findById(id).get();
+      Ticket ticket = ticketService.findById(id).get();
 
       model.addAttribute("ticket", ticket);
       model.addAttribute("pageTitle", "Edit Ticket (ID: " + id + ")");
@@ -92,7 +92,7 @@ public class TicketController {
   @GetMapping("/tickets/delete/{id}")
   public String deleteTicket(@PathVariable("id") Integer id, Model model, RedirectAttributes redirectAttributes) {
     try {
-      ticketRepository.deleteById(id);
+      ticketService.deleteById(id);
 
       redirectAttributes.addFlashAttribute("message", "The Ticket with id=" + id + " has been deleted successfully!");
     } catch (Exception e) {
@@ -106,7 +106,7 @@ public class TicketController {
   public String updateTicketPublishedStatus(@PathVariable("id") Integer id, @PathVariable("status") boolean published,
       Model model, RedirectAttributes redirectAttributes) {
     try {
-      ticketRepository.updatePublishedStatus(id, published);
+      ticketService.updatePublishedStatus(id, published);
 
       String status = published ? "published" : "disabled";
       String message = "The Ticket id=" + id + " has been " + status;
