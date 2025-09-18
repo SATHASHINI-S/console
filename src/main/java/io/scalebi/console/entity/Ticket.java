@@ -1,87 +1,68 @@
 package io.scalebi.console.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "tickets")
 public class Ticket {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private Integer id;
+    private Integer id;
+    private String title;
+    private String description;
+    private int level;
+    private boolean published;
 
-  @Column(length = 128, nullable = false)
-  private String title;
+    public Ticket() {
 
-  @Column(length = 256)
-  private String description;
+    }
 
-  @Column(nullable = false)
-  private int level;
+    public Ticket(String title, String description, int level, boolean published) {
+        this.title = title;
+        this.description = description;
+        this.level = level;
+        this.published = published;
+    }
 
-  @Column
-  private boolean published;
+    public Integer getId() {
+        return id;
+    }
 
-  public Ticket() {
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-  }
+    public String getTitle() {
+        return title;
+    }
 
-  public Ticket(String title, String description, int level, boolean published) {
-    this.title = title;
-    this.description = description;
-    this.level = level;
-    this.published = published;
-  }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-  public Integer getId() {
-    return id;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public void setId(Integer id) {
-    this.id = id;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-  public String getTitle() {
-    return title;
-  }
+    public int getLevel() {
+        return level;
+    }
 
-  public void setTitle(String title) {
-    this.title = title;
-  }
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public boolean isPublished() {
+        return published;
+    }
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public void setPublished(boolean published) {
+        this.published = published;
+    }
 
-  public int getLevel() {
-    return level;
-  }
-
-  public void setLevel(int level) {
-    this.level = level;
-  }
-
-  public boolean isPublished() {
-    return published;
-  }
-
-  public void setPublished(boolean published) {
-    this.published = published;
-  }
-
-  @Override
-  public String toString() {
-    return "Ticket [id=" + id + ", title=" + title + ", description=" + description + ", level=" + level
-        + ", published=" + published + "]";
-  }
+    @Override
+    public String toString() {
+        return "Ticket [id=" + id + ", title=" + title + ", description=" + description + ", level=" + level
+               + ", published=" + published + "]";
+    }
 
 }
