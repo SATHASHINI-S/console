@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import io.scalebi.console.entity.Ticket;
-import io.scalebi.console.repository.TicketService;
+import io.scalebi.console.service.TicketService;
 
 @Controller
 public class TicketController {

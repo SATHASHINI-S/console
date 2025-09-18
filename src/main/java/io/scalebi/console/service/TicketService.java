@@ -1,19 +1,18 @@
-package io.scalebi.console.repository;
+package io.scalebi.console.service;
 
 import io.scalebi.console.entity.Ticket;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Component
-public class TicketService implements CrudRepository<Ticket, Integer> {
+@Service
+public class TicketService  {
 
     private final JdbcClient jdbcClient;
 
@@ -78,7 +77,7 @@ public class TicketService implements CrudRepository<Ticket, Integer> {
         return new PageImpl<>(content, pageable, total);
     }
 
-    @Override
+   
     public <S extends Ticket> S save(S entity) {
         if (entity.getId() == null) {
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -108,17 +107,7 @@ public class TicketService implements CrudRepository<Ticket, Integer> {
         }
         return entity;
     }
-
-    @Override
-    public <S extends Ticket> Iterable<S> saveAll(Iterable<S> entities) {
-        List<S> saved = new ArrayList<>();
-        for (S entity : entities) {
-            saved.add(save(entity));
-        }
-        return saved;
-    }
-
-    @Override
+   
     public Optional<Ticket> findById(Integer id) {
         return jdbcClient.sql("SELECT * FROM tickets WHERE id = :id")
                 .param("id", id)
@@ -129,7 +118,7 @@ public class TicketService implements CrudRepository<Ticket, Integer> {
                 .map(this::mapRow);
     }
 
-    @Override
+   
     public boolean existsById(Integer id) {
         Integer count = jdbcClient.sql("SELECT COUNT(*) FROM tickets WHERE id = :id")
                 .param("id", id)
@@ -138,65 +127,13 @@ public class TicketService implements CrudRepository<Ticket, Integer> {
         return count != null && count > 0;
     }
 
-    @Override
-    public Iterable<Ticket> findAll() {
-        return jdbcClient.sql("SELECT * FROM tickets")
-                .query()
-                .listOfRows()
-                .stream()
-                .map(this::mapRow)
-                .toList();
-    }
-
-    @Override
-    public Iterable<Ticket> findAllById(Iterable<Integer> ids) {
-        String inClause = String.join(",", Collections.nCopies(((Collection<?>) ids).size(), "?"));
-        return jdbcClient.sql("SELECT * FROM tickets WHERE id IN (" + inClause + ")")
-                .params(ids)
-                .query()
-                .listOfRows()
-                .stream()
-                .map(this::mapRow)
-                .toList();
-    }
-
-    @Override
-    public long count() {
-        return jdbcClient.sql("SELECT COUNT(*) FROM tickets")
-                .query(Long.class)
-                .single();
-    }
-
-    @Override
+   
     public void deleteById(Integer id) {
         jdbcClient.sql("DELETE FROM tickets WHERE id = :id")
                 .param("id", id)
                 .update();
     }
 
-    @Override
-    public void delete(Ticket entity) {
-        deleteById(entity.getId());
-    }
-
-    @Override
-    public void deleteAllById(Iterable<? extends Integer> ids) {
-        for (Integer id : ids) {
-            deleteById(id);
-        }
-    }
-
-    @Override
-    public void deleteAll(Iterable<? extends Ticket> entities) {
-        for (Ticket ticket : entities) {
-            delete(ticket);
-        }
-    }
-
-    @Override
-    public void deleteAll() {
-        jdbcClient.sql("DELETE FROM tickets").update();
-    }
 
     // Row mapper for Ticket
     private Ticket mapRow(Map<String, Object> row) {
