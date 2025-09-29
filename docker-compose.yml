@@ -1,6 +1,6 @@
 services:
   console-db:
-    image: postgres
+    image: postgres:15
     container_name: sampledb
     environment:
       POSTGRES_DB: sampledb

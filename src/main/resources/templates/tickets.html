@@ -93,23 +93,29 @@
               <option th:selected="${pageSize == 100}" value="100">100</option>
             </select>
           </form>
-        </div>
 
         <div class="col-md-4 text-center">
           <span th:text="${totalItems}"></span> items • Page <span th:text="${currentPage}"></span> of <span th:text="${totalPages}"></span>
         </div>
 
         <div class="col-md-4 text-end">
-          <nav th:if="${totalPages > 1}" aria-label="Ticket pagination">
+          <nav aria-label="Ticket pagination">
             <ul class="pagination justify-content-center mb-0">
               <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
-                <a class="page-link" th:href="@{|/tickets?page=${currentPage - 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}" tabindex="-1">Previous</a>
+                <span class="page-link" th:if="${currentPage == 1}" tabindex="-1" aria-disabled="true">Previous</span>
+                <a class="page-link" th:if="${currentPage > 1}"
+                   th:href="@{|/tickets?page=${currentPage - 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Previous</a>
               </li>
               <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}" th:classappend="${i == currentPage} ? ' active'">
-                <a class="page-link" th:href="@{|/tickets?page=${i}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}" th:text="${i}">1</a>
+                <span class="page-link" th:if="${i == currentPage}" th:text="${i}">1</span>
+                <a class="page-link" th:if="${i != currentPage}"
+                   th:href="@{|/tickets?page=${i}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}"
+                   th:text="${i}">1</a>
               </li>
               <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
-                <a class="page-link" th:href="@{|/tickets?page=${currentPage + 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Next</a>
+                <span class="page-link" th:if="${currentPage == totalPages}" aria-disabled="true">Next</span>
+                <a class="page-link" th:if="${currentPage < totalPages}"
+                   th:href="@{|/tickets?page=${currentPage + 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Next</a>
               </li>
             </ul>
           </nav>
@@ -119,7 +125,7 @@
     </div>
 
     <div class="" th:unless="${tickets.size() > 0}">
-      <span>No tickets found!</span>
+{{ ... }}
     </div>
   </div>
 
