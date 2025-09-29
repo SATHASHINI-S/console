@@ -21,22 +21,23 @@
 
   <div class="container-fluid" style="max-width: 900px; margin: 0 auto;">
     <h2 class="text-center">Tickets</h2>
-
-    <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message"
-      role="alert">
+    
+    <div th:if="${message != null}" class="alert alert-success alert-dismissible fade show text-center message" role="alert">
       [[${message}]]
       <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
     <div class="my-3">
-      <form th:action="@{/tickets}" id="searchForm">
+      <form th:action="@{/tickets}" id="searchForm" method="get">
         <input type="hidden" name="page" value="1" />
+        <input type="hidden" name="size" th:value="${pageSize}" />
+        <input type="hidden" name="sort" th:value="${sort}" />
+        <input type="hidden" name="dir" th:value="${dir}" />
         <div class="row">
           <div class="col-12">
             <div class="input-group">
               <span class="input-group-text"><i class="fa fa-search"></i></span>
-              <input id="keyword" type="search" name="keyword" th:value="${keyword}" class="form-control"
-                placeholder="Enter keyword">
+              <input id="keyword" type="search" name="keyword" th:value="${keyword}" class="form-control" placeholder="Enter keyword">
               <button type="submit" class="btn btn-secondary">Search</button>
               <a th:href="@{/tickets}" class="btn btn-info">Clear</a>
             </div>
@@ -49,11 +50,31 @@
       <table class="table table-hover table-responsive-xl">
         <thead class="thead-light">
           <tr>
-            <th scope="col">Id</th>
-            <th scope="col">Title</th>
-            <th scope="col">Description</th>
-            <th scope="col">Level</th>
-            <th scope="col">Published</th>
+            <th scope="col">
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=id&dir=${sort == 'id' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Id
+                <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th scope="col">
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=title&dir=${sort == 'title' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Title
+                <span th:if="${sort == 'title'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th scope="col">
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=description&dir=${sort == 'description' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Description
+                <span th:if="${sort == 'description'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th scope="col">
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=level&dir=${sort == 'level' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Level
+                <span th:if="${sort == 'level'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
+            <th scope="col">
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=published&dir=${sort == 'published' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Published
+                <span th:if="${sort == 'published'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
+              </a>
+            </th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
@@ -64,17 +85,13 @@
             <td>[[${ticket.description}]]</td>
             <td>[[${ticket.level}]]</td>
             <td>
-              <a th:if="${ticket.published == true}" class="fa-regular fa-square-check"
-                th:href="@{'/tickets/' + ${ticket.id} + '/published/false'}" title="Disable this ticket"></a>
-              <a th:if="${ticket.published == false}" class="fa-regular fa-square icon-dark"
-                th:href="@{'/tickets/' + ${ticket.id} + '/published/true'}" title="Enable this ticket"></a>
+              <a th:if="${ticket.published == true}" class="fa-regular fa-square-check" th:href="@{'/tickets/' + ${ticket.id} + '/published/false'}" title="Disable this ticket"></a>
+              <a th:if="${ticket.published == false}" class="fa-regular fa-square icon-dark" th:href="@{'/tickets/' + ${ticket.id} + '/published/true'}" title="Enable this ticket"></a>
             </td>
             <td>
-              <a th:href="@{'/tickets/' + ${ticket.id}}" title="Edit this ticket"
-                class="fa-regular fa-pen-to-square icon-dark"></a>
+              <a th:href="@{'/tickets/' + ${ticket.id}}" title="Edit this ticket" class="fa-regular fa-pen-to-square icon-dark"></a>
               &nbsp;
-              <a th:href="@{'/tickets/delete/' + ${ticket.id}}" th:ticketTitle="${ticket.title}" id="btnDelete"
-                title="Delete this ticket" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
+              <a th:href="@{'/tickets/delete/' + ${ticket.id}}" th:ticketTitle="${ticket.title}" id="btnDelete" title="Delete this ticket" class="fa-regular fa-trash-can icon-dark btn-delete"></a>
             </td>
           </tr>
         </tbody>
@@ -85,6 +102,8 @@
           <form th:action="@{/tickets}" method="get" class="d-inline-flex align-items-center">
             <input type="hidden" name="page" value="1" />
             <input type="hidden" name="keyword" th:value="${keyword}" />
+            <input type="hidden" name="sort" th:value="${sort}" />
+            <input type="hidden" name="dir" th:value="${dir}" />
             <label for="sizeBottom" class="form-label me-2 mb-0">Per page</label>
             <select id="sizeBottom" name="size" class="form-select w-auto" onchange="this.form.submit()">
               <option th:selected="${pageSize == 10}" value="10">10</option>
@@ -93,6 +112,7 @@
               <option th:selected="${pageSize == 100}" value="100">100</option>
             </select>
           </form>
+        </div>
 
         <div class="col-md-4 text-center">
           <span th:text="${totalItems}"></span> items • Page <span th:text="${currentPage}"></span> of <span th:text="${totalPages}"></span>
@@ -100,22 +120,22 @@
 
         <div class="col-md-4 text-end">
           <nav aria-label="Ticket pagination">
-            <ul class="pagination justify-content-center mb-0">
+            <ul class="pagination justify-content-end mb-0">
               <li class="page-item" th:classappend="${currentPage == 1} ? ' disabled'">
                 <span class="page-link" th:if="${currentPage == 1}" tabindex="-1" aria-disabled="true">Previous</span>
                 <a class="page-link" th:if="${currentPage > 1}"
-                   th:href="@{|/tickets?page=${currentPage - 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Previous</a>
+                   th:href="@{|/tickets?page=${currentPage - 1}&size=${pageSize}&sort=${sort}&dir=${dir}${keyword != null ? '&keyword=' + keyword : ''}|}">Previous</a>
               </li>
               <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}" th:classappend="${i == currentPage} ? ' active'">
                 <span class="page-link" th:if="${i == currentPage}" th:text="${i}">1</span>
                 <a class="page-link" th:if="${i != currentPage}"
-                   th:href="@{|/tickets?page=${i}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}"
+                   th:href="@{|/tickets?page=${i}&size=${pageSize}&sort=${sort}&dir=${dir}${keyword != null ? '&keyword=' + keyword : ''}|}"
                    th:text="${i}">1</a>
               </li>
               <li class="page-item" th:classappend="${currentPage == totalPages} ? ' disabled'">
                 <span class="page-link" th:if="${currentPage == totalPages}" aria-disabled="true">Next</span>
                 <a class="page-link" th:if="${currentPage < totalPages}"
-                   th:href="@{|/tickets?page=${currentPage + 1}&size=${pageSize}${keyword != null ? '&keyword=' + keyword : ''}|}">Next</a>
+                   th:href="@{|/tickets?page=${currentPage + 1}&size=${pageSize}&sort=${sort}&dir=${dir}${keyword != null ? '&keyword=' + keyword : ''}|}">Next</a>
               </li>
             </ul>
           </nav>
@@ -125,8 +145,9 @@
     </div>
 
     <div class="" th:unless="${tickets.size() > 0}">
-{{ ... }}
+      {{ ... }}
     </div>
+
   </div>
 
   <div class="modal fade text-center" id="confirmModal" tabindex="-1" aria-hidden="true">

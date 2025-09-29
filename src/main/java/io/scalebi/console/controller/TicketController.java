@@ -23,11 +23,26 @@ public class TicketController {
   private TicketService ticketService;
 
   @GetMapping("/tickets")
-  public String getAll(Model model, @Param("keyword") String keyword, @Param("page") Integer page, @Param("size") Integer size) {
+  public String getAll(
+      Model model,
+      @Param("keyword") String keyword,
+      @Param("page") Integer page,
+      @Param("size") Integer size,
+      @Param("sort") String sort,
+      @Param("dir") String dir) {
     try {
       int currentPage = (page == null || page < 1) ? 1 : page;
       int pageSize = (size == null || size < 1) ? 10 : size;
-      Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(Sort.Direction.DESC, "id"));
+      // sorting
+      String sortField = (sort == null || sort.isBlank()) ? "id" : sort;
+      // whitelist of sortable fields
+      java.util.Set<String> allowed = java.util.Set.of("id", "title", "description", "level", "published");
+      if (!allowed.contains(sortField)) {
+        sortField = "id";
+      }
+      Sort.Direction direction = (dir != null && dir.equalsIgnoreCase("asc")) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
+      Pageable pageable = PageRequest.of(currentPage - 1, pageSize, Sort.by(direction, sortField));
 
       Page<Ticket> ticketPage;
       if (keyword == null || keyword.trim().isEmpty()) {
@@ -42,6 +57,9 @@ public class TicketController {
       model.addAttribute("totalPages", ticketPage.getTotalPages());
       model.addAttribute("totalItems", ticketPage.getTotalElements());
       model.addAttribute("pageSize", pageSize);
+      model.addAttribute("sort", sortField);
+      model.addAttribute("dir", direction.isAscending() ? "asc" : "desc");
+      model.addAttribute("reverseDir", direction.isAscending() ? "desc" : "asc");
     } catch (Exception e) {
       model.addAttribute("message", e.getMessage());
     }

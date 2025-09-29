@@ -31,7 +31,8 @@ public class TicketService  {
 
     public Page<Ticket> findByTitleContainingIgnoreCase(String keyword, Pageable pageable) {
         String baseSql = "FROM tickets WHERE LOWER(title) LIKE LOWER(:keyword)";
-        String sql = "SELECT * " + baseSql + " LIMIT :limit OFFSET :offset";
+        String orderBy = buildOrderBy(pageable);
+        String sql = "SELECT * " + baseSql + orderBy + " LIMIT :limit OFFSET :offset";
         String countSql = "SELECT COUNT(*) " + baseSql;
 
         List<Ticket> content = jdbcClient.sql(sql)
@@ -52,6 +53,30 @@ public class TicketService  {
         return new PageImpl<>(content, pageable, total);
     }
 
+    // Build a safe ORDER BY clause using Pageable sort and whitelisted columns
+    private String buildOrderBy(Pageable pageable) {
+        if (pageable == null || pageable.getSort() == null || pageable.getSort().isUnsorted()) {
+            return " ORDER BY id DESC"; // default
+        }
+
+        // whitelist of valid columns
+        Set<String> allowed = Set.of("id", "title", "description", "level", "published");
+
+        StringBuilder sb = new StringBuilder();
+        pageable.getSort().forEach(order -> {
+            String property = order.getProperty();
+            if (allowed.contains(property)) {
+                if (sb.length() == 0) sb.append(" ORDER BY "); else sb.append(", ");
+                sb.append(property).append(" ").append(order.isAscending() ? "ASC" : "DESC");
+            }
+        });
+
+        if (sb.length() == 0) {
+            return " ORDER BY id DESC";
+        }
+        return sb.toString();
+    }
+
     public void updatePublishedStatus(Integer id, boolean published) {
         jdbcClient.sql("UPDATE tickets SET published = :published WHERE id = :id")
                 .param("published", published)
@@ -60,7 +85,8 @@ public class TicketService  {
     }
 
     public Page<Ticket> findAll(Pageable pageable) {
-        String sql = "SELECT * FROM tickets LIMIT :limit OFFSET :offset";
+        String orderBy = buildOrderBy(pageable);
+        String sql = "SELECT * FROM tickets" + orderBy + " LIMIT :limit OFFSET :offset";
         String countSql = "SELECT COUNT(*) FROM tickets";
 
         List<Ticket> content = jdbcClient.sql(sql)
