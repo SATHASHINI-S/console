@@ -51,29 +51,19 @@
         <thead class="thead-light">
           <tr>
             <th scope="col">
-              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=id&dir=${sort == 'id' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Id
-                <span th:if="${sort == 'id'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-              </a>
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=id&dir=${sort == 'id' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Id</a>
             </th>
             <th scope="col">
-              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=title&dir=${sort == 'title' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Title
-                <span th:if="${sort == 'title'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-              </a>
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=title&dir=${sort == 'title' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Title</a>
             </th>
             <th scope="col">
-              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=description&dir=${sort == 'description' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Description
-                <span th:if="${sort == 'description'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-              </a>
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=description&dir=${sort == 'description' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Description</a>
             </th>
             <th scope="col">
-              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=level&dir=${sort == 'level' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Level
-                <span th:if="${sort == 'level'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-              </a>
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=level&dir=${sort == 'level' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Level</a>
             </th>
             <th scope="col">
-              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=published&dir=${sort == 'published' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Published
-                <span th:if="${sort == 'published'}" th:text="${dir == 'asc' ? '▲' : '▼'}"></span>
-              </a>
+              <a th:href="@{|/tickets?page=${currentPage}&size=${pageSize}&sort=published&dir=${sort == 'published' ? reverseDir : 'asc'}${keyword != null ? '&keyword=' + keyword : ''}|}">Published</a>
             </th>
             <th scope="col">Actions</th>
           </tr>
